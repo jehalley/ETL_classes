@@ -12,7 +12,7 @@ class CsvAggregator():
     def __init__(self,csv_file_path, key_column,value_column, csv_headers=[], 
                  csv_col_data_types=[], counts_per_type={},
                  total_counts=0,sums={},frequency_of_type={}, 
-                 average_price_of_type={}):
+                 average_price_of_type={},test_row=None):
         
         self.csv_file_path = csv_file_path
         self.key_column = key_column
@@ -25,14 +25,17 @@ class CsvAggregator():
         self.average_price_of_type = average_price_of_type
         self.frequency_of_type = frequency_of_type
         self.invalid_rows = []
+        self.test_row = test_row
         
-        # set member variables from csv file
+        # set member variables from csv file if not test variables
         self.get_csv_headers()
         self.get_col_data_types()
         self.get_key_column_index()
         self.get_value_column_index()
-        self.get_frequency_of_type()
-        self.get_average_price_of_type()
+        
+        if self.csv_file_path != 'test': 
+            self.get_frequency_of_type()
+            self.get_average_price_of_type()
     
     @staticmethod       
     def get_cell_data_type(cell):
@@ -46,22 +49,28 @@ class CsvAggregator():
         return data_type
     
     def get_col_data_types(self):
-        if not self.csv_col_data_types:
+        if not self.csv_col_data_types and self.csv_file_path != 'test':
             with open(self.csv_file_path, "r") as csv_file:
                 reader = csv.reader(csv_file)
                 #advance to the first row
                 next(reader)
                 #read in first row and determine data types
-                self.csv_col_data_types = [self.get_cell_data_type(x)\
-                                           for x in next(reader)]     
+                first_line = next(reader)
+        elif self.csv_file_path == 'test' and self.test_row:
+            first_line = self.test_row
+        
+        self.csv_col_data_types = [self.get_cell_data_type(x) for x in first_line]     
     
     def get_csv_headers(self):
-        if not self.csv_headers:
+        if not self.csv_headers and self.csv_file_path != 'test':
             with open(self.csv_file_path, "r") as csv_file:
                 reader = csv.reader(csv_file)
                 #read in headers and remove whitespace and spaces between words
-                self.csv_headers = [x.strip().replace(' ','_')\
-                                    for x in next(reader)]
+                header_row = next(reader)
+        elif self.csv_file_path == 'test' and self.test_row:
+            header_row = self.test_row
+            
+        self.csv_headers = [x.strip().replace(' ','_') for x in header_row]
     
     def get_key_column_index(self):
         if type(self.key_column) != int:
@@ -69,7 +78,7 @@ class CsvAggregator():
                 self.key_column = self.csv_headers.index(self.key_column)
             else:
                 raise Exception('Key column must either be\
-                                column index or column name')
+                                int for column index or string for column name')
     
     def get_value_column_index(self):
         if type(self.value_column) != int:
@@ -79,7 +88,7 @@ class CsvAggregator():
                 raise Exception('Value column must either be int for\
                                 column index or str for column name')
         if self.csv_col_data_types[self.value_column] not in (int,float):
-            raise Exception('Value column must either be a numeric data type')
+            raise Exception('Value column must either int or float type')
             
              
     def read_and_aggregate_csv(self):
