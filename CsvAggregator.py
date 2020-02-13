@@ -24,6 +24,7 @@ class CsvAggregator():
         self.sums = sums
         self.average_price_of_type = average_price_of_type
         self.frequency_of_type = frequency_of_type
+        self.invalid_rows = []
         
         # set member variables from csv file
         self.get_csv_headers()
@@ -87,19 +88,29 @@ class CsvAggregator():
             #advance to the first row
             next(reader)
             for row in reader:
-                self.total_counts += 1
-                converted_row = [x(y) for\
-                                 x,y in zip(self.csv_col_data_types,row)]
-                if converted_row[self.key_column] in self.counts_per_type:
-                    self.counts_per_type[converted_row[self.key_column]] += 1
-                    # don't have a price so using 'aisle_id' as stand in
-                    self.sums[converted_row[self.key_column]]\
-                    += converted_row[self.value_column]
-                else:
-                    self.counts_per_type[converted_row[self.key_column]] = 1
-                    self.sums[converted_row[self.key_column]]\
-                    = converted_row[self.value_column]
-            
+                try:
+                    converted_row = [x(y) for\
+                                     x,y in zip(self.csv_col_data_types,row)]
+                    self.total_counts += 1
+                    
+                    try:
+                        converted_row[self.key_column] in self.counts_per_type
+                        self.counts_per_type[converted_row[self.key_column]] += 1
+                        # don't have a price so using 'aisle_id' as stand in
+                        self.sums[converted_row[self.key_column]]\
+                        += converted_row[self.value_column]
+                    except KeyError:
+                        self.counts_per_type[converted_row[self.key_column]] = 1
+                        self.sums[converted_row[self.key_column]]\
+                        = converted_row[self.value_column]
+                except TypeError:
+                    print('Invalid data type for column')
+                
+                except ValueError:
+                    print('Invalid row found, it was not counted\
+                          and stored in the invalid_rows attribute')
+                    self.invalid_rows.append(row)
+                
     def get_frequency_of_type(self):
         if not self.frequency_of_type:
             if not self.counts_per_type or not self.total_counts:
