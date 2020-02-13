@@ -14,8 +14,6 @@ class EtlCsvExtractor(Generator):
                  csv_col_data_types=[], test_row=None):
         
         self.csv_file_path = csv_file_path
-        self.key_column = key_column
-        self.value_column = value_column
         self.csv_headers = csv_headers
         self.csv_col_data_types = csv_col_data_types
         
@@ -29,8 +27,6 @@ class EtlCsvExtractor(Generator):
             if not self.first_row:
                 self.first_row = next(self.reader)
             self.get_col_data_types()
-            self.get_key_column_index()
-            self.get_value_column_index()
         
         #self.next_row =[x(y) for x,y in zip(self.csv_col_data_types, self.first_row)]
         
@@ -55,26 +51,6 @@ class EtlCsvExtractor(Generator):
         if not self.csv_col_data_types:
             self.csv_col_data_types = [self.get_cell_data_type(x)\
                                        for x in self.first_row]     
-           
-  
-    def get_key_column_index(self):
-        if type(self.key_column) != int:
-            if type(self.key_column) == str:
-                self.key_column = self.csv_headers.index(self.key_column)
-            else:
-                raise Exception('Key column must either be\
-                                int for column index or string for column name')
-    
-    def get_value_column_index(self):
-        if type(self.value_column) != int:
-            if type(self.value_column) == str:
-                self.value_column = self.csv_headers.index(self.value_column)
-            else:
-                raise Exception('Value column must either be int for\
-                                column index or str for column name')
-        if self.csv_col_data_types[self.value_column] not in (int,float):
-            raise Exception('Value column must either int or float type')
-    
     def has_next(self):
         if self.next_row:
             return True
