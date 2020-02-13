@@ -50,7 +50,20 @@ class EtlTransformer:
                           and stored in the invalid_rows attribute')
                     self.invalid_rows.append(cur_row)
                         
+        self.get_frequency_of_type()
+        self.get_average_price_of_type()     
             
-            
-            
+    def get_frequency_of_type(self):
+        if not self.frequency_of_type:
+            self.frequency_of_type = {k:(v/self.total_counts)\
+                                  for k,v in self.counts_per_type.items()}
+    
+        
+    def get_average_price_of_type(self):
+        if not self.average_price_of_type:
+            self.average_price_of_type = {k:(self.sums_of_values_per_type[k]\
+                                             /self.counts_per_type[k])\
+                                for k in self.sums_of_values_per_type.keys()} 
+    
+        
         
