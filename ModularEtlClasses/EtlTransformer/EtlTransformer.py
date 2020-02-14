@@ -13,7 +13,7 @@ class EtlTransformer:
         self.key_col_name = key_col_name
         self.value_col_name = value_col_name
         self.counts_per_type = {}
-        self.total_counts = {}
+        self.total_counts = 0
         self.sums_of_values_per_type = {}
         self.average_price_of_type = {}
         self.frequency_of_type = {}

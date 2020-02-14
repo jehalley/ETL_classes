@@ -21,3 +21,7 @@ class EtlCsvRowExtractorTestClass(EtlCsvRowExtractor):
                          k, v, vtype in zip(self.csv_headers,
                                             self.first_row,
                                             self.csv_col_data_types)}
+
+        # reader needs to be mocked for testing next row and send
+        self.next_file = None
+        self.reader = iter([self.first_row])
